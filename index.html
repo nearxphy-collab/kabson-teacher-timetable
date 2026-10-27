@@ -49,10 +49,10 @@
     </section>
 
     <div class="shell content-shell">
-      <section class="finder surface" aria-labelledby="findTitle">
+      <section id="finder" class="finder surface" aria-labelledby="findTitle">
         <div class="section-head"><div><span class="section-kicker">เริ่มต้นที่นี่</span><h2 id="findTitle">ค้นหาตารางของครู</h2></div><span class="teacher-count" id="teacherCount"></span></div>
         <label class="search-label" id="searchLabel" for="teacherSearch">ชื่อหรือรหัสครู</label>
-        <div class="search-wrap"><svg viewBox="0 0 24 24" fill="none" aria-hidden="true"><circle cx="10.8" cy="10.8" r="6.8" stroke="currentColor" stroke-width="1.8"/><path d="m16 16 5 5" stroke="currentColor" stroke-width="1.8" stroke-linecap="round"/></svg><input id="teacherSearch" type="search" placeholder="พิมพ์ชื่อ หรือรหัสครู เช่น 0403" autocomplete="off"><kbd>/</kbd></div>
+        <div class="search-wrap"><svg viewBox="0 0 24 24" fill="none" aria-hidden="true"><circle cx="10.8" cy="10.8" r="6.8" stroke="currentColor" stroke-width="1.8"/><path d="m16 16 5 5" stroke="currentColor" stroke-width="1.8" stroke-linecap="round"/></svg><input id="teacherSearch" type="search" aria-label="ชื่อหรือรหัสครู" placeholder="พิมพ์ชื่อ หรือรหัสครู เช่น 0403" autocomplete="off"><kbd>/</kbd></div>
         <div id="teacherResults" class="teacher-results" aria-live="polite"></div>
       </section>
 
@@ -70,10 +70,10 @@
 
         <section id="scheduleSection" class="schedule-section surface" data-layout="week" aria-labelledby="scheduleTitle">
           <div class="schedule-heading"><div><span class="section-kicker">ตารางทั้งสัปดาห์</span><h3 id="scheduleTitle">วันเรียน × คาบ</h3></div><div class="legend"><span><i class="legend-class"></i> คาบเรียน</span><span><i class="legend-activity"></i> กิจกรรม</span><span><i class="legend-free"></i> ว่าง</span></div></div>
-          <div class="layout-toggle" role="group" aria-label="รูปแบบตารางบนมือถือ"><button id="weekLayoutButton" class="layout-button" type="button" aria-pressed="true">ทั้งสัปดาห์</button><button id="dayLayoutButton" class="layout-button" type="button" aria-pressed="false">ดูรายวัน</button></div>
+          <div class="schedule-controls"><div class="layout-toggle" role="group" aria-label="รูปแบบตารางบนมือถือ"><button id="weekLayoutButton" class="layout-button" type="button" aria-pressed="true">สัปดาห์</button><button id="dayLayoutButton" class="layout-button" type="button" aria-pressed="false">รายวัน</button></div><div class="period-jump"><label class="sr-only" for="periodJump">ข้ามไปคาบ</label><select id="periodJump"><option value="">ไปคาบ…</option></select></div></div>
           <div id="dayTabs" class="day-tabs" role="group" aria-label="เลือกวันเรียน"></div>
           <div id="mobileAgenda" class="mobile-agenda"></div>
-          <p class="scroll-hint">เลื่อนตารางในกรอบซ้าย–ขวา เพื่อดูคาบทั้งหมด</p>
+          <p class="scroll-hint">เลื่อนซ้าย–ขวาเพื่อดูคาบอื่น และแตะคาบเพื่ออ่านรายละเอียด</p>
           <div class="desktop-table-wrap" tabindex="0" aria-label="ตารางสอนทั้งสัปดาห์ เลื่อนซ้ายขวาเพื่อดูคาบทั้งหมด"><table id="weekTable" class="week-table"><caption class="sr-only">ตารางทั้งสัปดาห์ แถวเป็นวัน คอลัมน์เป็นคาบ</caption><thead></thead><tbody></tbody></table></div>
         </section>
 
@@ -84,6 +84,11 @@
       <p id="toast" class="toast" role="status" aria-live="polite"></p>
     </div>
   </main>
+
+  <dialog id="slotDialog" class="slot-dialog" aria-labelledby="slotDialogTitle" aria-describedby="slotDialogMeta">
+    <div class="slot-dialog-head"><div><span id="slotDialogMeta" class="section-kicker"></span><h2 id="slotDialogTitle"></h2></div><button id="closeSlotDialog" class="dialog-close" type="button" aria-label="ปิดรายละเอียดคาบ"><svg viewBox="0 0 24 24" fill="none" aria-hidden="true"><path d="M5 5 19 19M19 5 5 19" stroke="currentColor" stroke-width="2" stroke-linecap="round"/></svg></button></div>
+    <dl id="slotDialogDetails" class="slot-details"></dl>
+  </dialog>
 
   <footer class="site-footer"><div class="shell footer-inner"><span>KabSon · ตารางสอนครูและนักเรียน</span><span id="footerVersion">ฉบับประกาศ</span></div></footer>
 </body>
