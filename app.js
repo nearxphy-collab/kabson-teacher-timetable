@@ -2,120 +2,149 @@
   'use strict';
   const data = window.KABSON_TIMETABLE;
   const byId = (id) => document.getElementById(id);
-  if (!data || !Array.isArray(data.teachers) || !Array.isArray(data.days)) {
+  if (!data || !Array.isArray(data.teachers) || !Array.isArray(data.classes) || !Array.isArray(data.days)) {
     byId('teacherResults').textContent = 'ยังโหลดตารางสอนไม่สำเร็จ กรุณาลองเปิดหน้าอีกครั้ง';
     return;
   }
 
-  const teachers = data.teachers.slice().sort((a, b) => a.name.localeCompare(b.name, 'th'));
+  const query = new URL(location.href).searchParams;
+  const view = query.get('view') === 'student' || (query.has('class') && !query.has('teacher')) ? 'student' : 'teacher';
+  const isStudent = view === 'student';
+  const items = (isStudent ? data.classes : data.teachers).slice()
+    .sort((a, b) => isStudent ? a.code.localeCompare(b.code, 'th', { numeric: true }) : a.name.localeCompare(b.name, 'th'));
   const dayNames = new Map(data.days.map((day) => [day.number, day.name]));
   const periods = data.periods.slice().sort((a, b) => a.number - b.number);
-  let selectedTeacher = null;
+  const search = byId('teacherSearch');
+  let selectedItem = null;
   let selectedDay = todayInBangkok();
   let toastTimer;
 
-  document.title = `ตารางสอนครู ${data.term} | ${data.school}`;
+  byId('teacherNav').setAttribute('aria-current', isStudent ? 'false' : 'page');
+  byId('studentNav').setAttribute('aria-current', isStudent ? 'page' : 'false');
+  byId('teacherNav').classList.toggle('is-active', !isStudent);
+  byId('studentNav').classList.toggle('is-active', isStudent);
+  document.body.classList.toggle('student-mode', isStudent);
+  document.title = `ตาราง${isStudent ? 'นักเรียน' : 'ครู'} ${data.term} | ${data.school}`;
   byId('schoolName').textContent = data.school;
   byId('headerTerm').textContent = `ภาคเรียน ${data.term}`;
   byId('publishedLabel').textContent = `ภาคเรียน ${data.term}`;
-  byId('teacherCount').textContent = `${teachers.length} ครู`;
+  byId('teacherCount').textContent = `${items.length} ${isStudent ? 'ห้อง' : 'ครู'}`;
   byId('termValue').textContent = data.term;
   byId('footerVersion').textContent = `ภาคเรียน ${data.term} · ฉบับประกาศ #${data.publicationId}`;
   byId('versionNote').textContent = `ฉบับประกาศ #${data.publicationId} · รหัส ${data.fingerprint} · เมื่อมีตารางใหม่ โรงเรียนจะอัปเดตหน้านี้`;
+  byId('teacherSupport').hidden = isStudent;
+  byId('heroMain').textContent = isStudent ? 'ตารางเรียนของห้อง' : 'ตารางสอนของคุณ';
+  byId('heroLead').textContent = isStudent
+    ? 'เลือกชั้นและห้องเพื่อดูวิชา ครูผู้สอน ห้องเรียน และกิจกรรมได้ทันที ทั้งบนมือถือและคอมพิวเตอร์'
+    : 'เลือกครูหนึ่งครั้ง แล้วเปิดดูคาบสอน ห้องเรียน และกิจกรรมได้ทันที ทั้งบนมือถือและคอมพิวเตอร์';
+  byId('findTitle').textContent = isStudent ? 'เลือกชั้นและห้องเรียน' : 'ค้นหาตารางของครู';
+  byId('searchLabel').textContent = isStudent ? 'ชั้นหรือห้องเรียน' : 'ชื่อหรือรหัสครู';
+  search.placeholder = isStudent ? 'พิมพ์ชั้นหรือห้อง เช่น 3/1' : 'พิมพ์ชื่อ หรือรหัสครู เช่น 0403';
+  byId('scheduleKicker').textContent = isStudent ? 'ตารางเรียนรายห้อง' : 'ตารางสอนรายบุคคล';
+  byId('lessonLabel').textContent = isStudent ? 'คาบเรียนต่อสัปดาห์' : 'คาบสอนต่อสัปดาห์';
+  byId('lessonNote').textContent = isStudent ? 'นับเฉพาะคาบเรียนจริง' : 'นับเฉพาะคาบสอนจริง';
+  byId('busyLabel').textContent = isStudent ? 'วันเรียนมากที่สุด' : 'วันสอนมากที่สุด';
+  byId('emptyTitle').textContent = isStudent ? 'เลือกห้องเพื่อเปิดตาราง' : 'เลือกครูเพื่อเปิดตาราง';
+  byId('emptyLead').textContent = isStudent
+    ? 'กดห้องจากรายการด้านบน หรือค้นหาด้วยชั้นเรียน'
+    : 'กดชื่อจากรายการด้านบน หรือค้นหาด้วยรหัสครู';
   if (data.lineOaUrl) {
     byId('lineButton').href = data.lineOaUrl;
     byId('lineButton').hidden = false;
     byId('linePending').hidden = true;
   }
 
-  const search = byId('teacherSearch');
   search.addEventListener('focus', () => document.body.classList.add('search-open'));
-  search.addEventListener('input', () => { document.body.classList.add('search-open'); renderTeacherChoices(); });
+  search.addEventListener('input', () => { document.body.classList.add('search-open'); renderChoices(); });
   document.addEventListener('keydown', (event) => {
     if (event.key === '/' && document.activeElement !== search) {
       event.preventDefault();
       search.focus();
     }
   });
-  byId('shareButton').addEventListener('click', shareTeacher);
+  byId('shareButton').addEventListener('click', shareSelection);
   byId('printButton').addEventListener('click', () => window.print());
   window.addEventListener('popstate', () => {
-    const code = new URL(location.href).searchParams.get('teacher');
-    selectTeacher(teachers.find((teacher) => teacher.code === code) || null, false);
+    const code = new URL(location.href).searchParams.get(isStudent ? 'class' : 'teacher');
+    selectItem(items.find((item) => item.code === code) || null, false);
   });
 
-  const requestedCode = new URL(location.href).searchParams.get('teacher');
-  const rememberedCode = safeStorageGet('kabson-teacher-code');
-  const initial = teachers.find((teacher) => teacher.code === requestedCode)
-    || teachers.find((teacher) => teacher.code === rememberedCode) || null;
-  renderTeacherChoices();
-  if (initial) selectTeacher(initial, Boolean(requestedCode));
+  const requestedCode = query.get(isStudent ? 'class' : 'teacher');
+  const rememberedCode = safeStorageGet(isStudent ? 'kabson-class-code' : 'kabson-teacher-code');
+  const initial = items.find((item) => item.code === requestedCode)
+    || items.find((item) => item.code === rememberedCode) || null;
+  renderChoices();
+  if (initial) selectItem(initial, Boolean(requestedCode));
 
-  function renderTeacherChoices() {
+  function renderChoices() {
     const root = byId('teacherResults');
     root.replaceChildren();
-    const query = search.value.trim().toLocaleLowerCase('th');
-    const matches = teachers.filter((teacher) => `${teacher.name} ${teacher.code}`.toLocaleLowerCase('th').includes(query));
+    const term = search.value.trim().toLocaleLowerCase('th');
+    const matches = items.filter((item) => `${item.name} ${item.code}`.toLocaleLowerCase('th').includes(term));
     if (!matches.length) {
       const message = document.createElement('span');
       message.className = 'no-results';
-      message.textContent = 'ไม่พบครูตามคำค้น';
+      message.textContent = isStudent ? 'ไม่พบห้องเรียนตามคำค้น' : 'ไม่พบครูตามคำค้น';
       root.append(message);
       return;
     }
-    for (const teacher of matches) {
+    for (const item of matches) {
       const button = document.createElement('button');
       button.type = 'button';
-      button.className = 'teacher-choice' + (selectedTeacher?.code === teacher.code ? ' is-selected' : '');
-      button.textContent = teacher.name;
-      const code = document.createElement('small');
-      code.textContent = teacher.code;
-      button.append(code);
-      button.setAttribute('aria-pressed', String(selectedTeacher?.code === teacher.code));
+      button.className = 'teacher-choice' + (selectedItem?.code === item.code ? ' is-selected' : '');
+      button.textContent = item.name;
+      if (!isStudent) {
+        const code = document.createElement('small');
+        code.textContent = item.code;
+        button.append(code);
+      }
+      button.setAttribute('aria-pressed', String(selectedItem?.code === item.code));
       button.addEventListener('click', () => {
         search.value = '';
         search.blur();
         document.body.classList.remove('search-open');
-        selectTeacher(teacher, true);
+        selectItem(item, true);
       });
       root.append(button);
     }
   }
 
-  function selectTeacher(teacher, updateUrl) {
-    selectedTeacher = teacher;
-    document.body.classList.toggle('has-selection', Boolean(teacher));
-    byId('teacherView').hidden = !teacher;
-    byId('emptyState').hidden = Boolean(teacher);
+  function selectItem(item, updateUrl) {
+    selectedItem = item;
+    document.body.classList.toggle('has-selection', Boolean(item));
+    byId('teacherView').hidden = !item;
+    byId('emptyState').hidden = Boolean(item);
     if (updateUrl) {
       const url = new URL(location.href);
-      if (teacher) url.searchParams.set('teacher', teacher.code);
-      else url.searchParams.delete('teacher');
+      url.searchParams.delete(isStudent ? 'teacher' : 'class');
+      if (isStudent) url.searchParams.set('view', 'student');
+      else url.searchParams.delete('view');
+      if (item) url.searchParams.set(isStudent ? 'class' : 'teacher', item.code);
+      else url.searchParams.delete(isStudent ? 'class' : 'teacher');
       history.replaceState(null, '', url);
     }
-    if (!teacher) { renderTeacherChoices(); return; }
-    safeStorageSet('kabson-teacher-code', teacher.code);
-    byId('teacherName').textContent = teacher.name;
-    byId('teacherCode').textContent = `รหัสครู ${teacher.code}`;
-    byId('lessonCount').textContent = String(teacher.lessons);
+    if (!item) { renderChoices(); return; }
+    safeStorageSet(isStudent ? 'kabson-class-code' : 'kabson-teacher-code', item.code);
+    byId('teacherName').textContent = item.name;
+    byId('teacherCode').textContent = isStudent ? `ชั้น ${item.name}` : `รหัสครู ${item.code}`;
+    byId('lessonCount').textContent = String(item.lessons);
     const dayLoads = data.days.map((day) => ({
-      day: day.number, name: day.name,
-      count: teacher.slots.filter((slot) => slot.day === day.number && slot.kind === 'class').length
+      name: day.name,
+      count: item.slots.filter((slot) => slot.day === day.number && slot.kind === 'class').length
     }));
     const busiest = dayLoads.reduce((best, current) => current.count > best.count ? current : best, dayLoads[0]);
     byId('busyDay').textContent = busiest?.count ? busiest.name : '—';
-    byId('busyDetail').textContent = busiest?.count ? `${busiest.count} คาบสอน` : 'ไม่มีคาบสอน';
-    const title = `ตารางสอน ${teacher.name} | ภาคเรียน ${data.term}`;
-    document.title = title;
+    byId('busyDetail').textContent = busiest?.count ? `${busiest.count} คาบ${isStudent ? 'เรียน' : 'สอน'}` : 'ไม่มีคาบเรียน';
+    document.title = `ตาราง${isStudent ? 'เรียน' : 'สอน'} ${item.name} | ภาคเรียน ${data.term}`;
     if (!dayNames.has(selectedDay)) selectedDay = data.days[0]?.number;
     renderDayTabs();
     renderAgenda();
     renderWeekTable();
-    renderTeacherChoices();
+    renderChoices();
   }
 
   function slotAt(day, period) {
-    return selectedTeacher.slots.find((slot) => slot.day === day && slot.period === period);
+    return selectedItem.slots.find((slot) => slot.day === day && slot.period === period);
   }
 
   function slotDisplay(slot) {
@@ -131,12 +160,21 @@
     title.className = 'slot-title';
     title.textContent = slot?.title || 'ว่าง';
     card.append(title);
-    if (slot?.kind === 'class') {
-      const details = [slot.subjectCode, slot.sections?.join(', '), slot.room && `ห้อง ${slot.room}`].filter(Boolean);
-      const detail = document.createElement('span');
-      detail.className = 'slot-detail';
-      detail.textContent = details.join(' · ');
-      card.append(detail);
+    if (slot) {
+      let details = [];
+      if (slot.kind === 'class') {
+        details = isStudent
+          ? [slot.subjectCode, slot.teacher && `ครู${slot.teacher}`, slot.room && `ห้อง ${slot.room}`]
+          : [slot.subjectCode, slot.sections?.join(', '), slot.room && `ห้อง ${slot.room}`];
+      } else if (isStudent && slot.teacher && !/พักกลางวัน/.test(slot.title)) {
+        details = [`ครู${slot.teacher}`];
+      }
+      if (details.filter(Boolean).length) {
+        const detail = document.createElement('span');
+        detail.className = 'slot-detail';
+        detail.textContent = details.filter(Boolean).join(' · ');
+        card.append(detail);
+      }
     }
     return card;
   }
@@ -170,7 +208,7 @@
     }
     for (const period of periods) {
       const row = body.insertRow();
-      const label = row.insertCell(); label.append(periodLabel(period));
+      row.insertCell().append(periodLabel(period));
       for (const day of data.days) row.insertCell().append(slotDisplay(slotAt(day.number, period.number)));
     }
   }
@@ -195,18 +233,21 @@
       const label = document.createElement('div'); label.className = 'agenda-period';
       label.textContent = `คาบ ${period.number}`;
       if (period.startTime && period.endTime) {
-        const time = document.createElement('small'); time.textContent = `${period.startTime}–${period.endTime}`; label.append(time);
+        const time = document.createElement('small');
+        time.textContent = `${period.startTime}–${period.endTime}`;
+        label.append(time);
       }
       row.append(label, slotDisplay(slotAt(selectedDay, period.number)));
       root.append(row);
     }
   }
 
-  async function shareTeacher() {
-    if (!selectedTeacher) return;
+  async function shareSelection() {
+    if (!selectedItem) return;
     const url = new URL(location.href);
-    url.searchParams.set('teacher', selectedTeacher.code);
-    const title = `ตารางสอน ${selectedTeacher.name} ภาคเรียน ${data.term}`;
+    if (isStudent) { url.searchParams.set('view', 'student'); url.searchParams.set('class', selectedItem.code); }
+    else url.searchParams.set('teacher', selectedItem.code);
+    const title = `ตาราง${isStudent ? 'เรียน' : 'สอน'} ${selectedItem.name} ภาคเรียน ${data.term}`;
     try {
       if (navigator.share) await navigator.share({ title, url: url.toString() });
       else { await navigator.clipboard.writeText(url.toString()); showToast('คัดลอกลิงก์แล้ว'); }

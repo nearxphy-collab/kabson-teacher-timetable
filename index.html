@@ -5,8 +5,8 @@
   <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
   <meta name="theme-color" content="#112e37">
   <meta name="robots" content="noindex, nofollow">
-  <meta name="description" content="ตารางสอนครูฉบับประกาศ เลือกครูแล้วดูได้ทุกที่บนมือถือหรือคอมพิวเตอร์">
-  <title>ตารางสอนครู | KabSon</title>
+  <meta name="description" content="ตารางสอนครูและนักเรียนฉบับประกาศ ดูได้ทุกที่บนมือถือหรือคอมพิวเตอร์">
+  <title>ตารางสอน | KabSon</title>
   <link rel="stylesheet" href="style.css">
   <script defer src="data.js"></script>
   <script defer src="app.js"></script>
@@ -15,12 +15,16 @@
   <a class="skip-link" href="#main">ข้ามไปยังเนื้อหา</a>
   <header class="site-header">
     <div class="shell header-inner">
-      <a class="brand" href="./" aria-label="หน้าแรกตารางสอนครู">
+      <a class="brand" href="./" aria-label="หน้าแรกตารางสอน">
         <span class="brand-mark" aria-hidden="true"><svg viewBox="0 0 40 40" fill="none"><path d="M8 10h24v20H8z" stroke="currentColor" stroke-width="2"/><path d="M8 17h24M15 10v20M21 22l3 3 5-6" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/></svg></span>
-        <span class="brand-name">KabSon<span>ครู</span></span>
+        <span class="brand-name">KabSon<span>ตารางสอน</span></span>
       </a>
       <span class="header-term" id="headerTerm">ภาคเรียน 2/2569</span>
     </div>
+    <nav class="shell view-nav" aria-label="ประเภทตารางสอน">
+      <a id="teacherNav" class="view-link" href="?view=teacher">ตารางครู</a>
+      <a id="studentNav" class="view-link" href="?view=student">ตารางนักเรียน</a>
+    </nav>
   </header>
 
   <main id="main">
@@ -30,8 +34,8 @@
       <div class="shell hero-inner">
         <div class="hero-copy">
           <span class="eyebrow"><span class="live-dot"></span> ตารางสอนฉบับประกาศ</span>
-          <h1 id="heroTitle">ตารางสอนของคุณ<br><span>ดูได้ทุกที่</span></h1>
-          <p>เลือกครูหนึ่งครั้ง แล้วเปิดดูคาบสอน ห้องเรียน และกิจกรรมได้ทันที ทั้งบนมือถือและคอมพิวเตอร์</p>
+          <h1 id="heroTitle"><span id="heroMain">ตารางสอนของคุณ</span><br><span id="heroAccent">ดูได้ทุกที่</span></h1>
+          <p id="heroLead">เลือกครูหนึ่งครั้ง แล้วเปิดดูคาบสอน ห้องเรียน และกิจกรรมได้ทันที ทั้งบนมือถือและคอมพิวเตอร์</p>
           <div class="hero-meta"><span id="schoolName">โรงเรียน</span><span class="meta-divider" aria-hidden="true"></span><span id="publishedLabel">ภาคเรียน 2/2569</span></div>
         </div>
         <div class="hero-art" aria-hidden="true">
@@ -47,21 +51,21 @@
     <div class="shell content-shell">
       <section class="finder surface" aria-labelledby="findTitle">
         <div class="section-head"><div><span class="section-kicker">เริ่มต้นที่นี่</span><h2 id="findTitle">ค้นหาตารางของครู</h2></div><span class="teacher-count" id="teacherCount"></span></div>
-        <label class="search-label" for="teacherSearch">ชื่อหรือรหัสครู</label>
+        <label class="search-label" id="searchLabel" for="teacherSearch">ชื่อหรือรหัสครู</label>
         <div class="search-wrap"><svg viewBox="0 0 24 24" fill="none" aria-hidden="true"><circle cx="10.8" cy="10.8" r="6.8" stroke="currentColor" stroke-width="1.8"/><path d="m16 16 5 5" stroke="currentColor" stroke-width="1.8" stroke-linecap="round"/></svg><input id="teacherSearch" type="search" placeholder="พิมพ์ชื่อ หรือรหัสครู เช่น 0403" autocomplete="off"><kbd>/</kbd></div>
         <div id="teacherResults" class="teacher-results" aria-live="polite"></div>
       </section>
 
       <section id="teacherView" class="teacher-view" hidden aria-labelledby="teacherName">
         <div class="teacher-heading surface">
-          <div class="teacher-heading-main"><span class="section-kicker">ตารางสอนรายบุคคล</span><h2 id="teacherName"></h2><p id="teacherCode"></p></div>
+          <div class="teacher-heading-main"><span class="section-kicker" id="scheduleKicker">ตารางสอนรายบุคคล</span><h2 id="teacherName"></h2><p id="teacherCode"></p></div>
           <div class="teacher-actions"><button id="shareButton" class="action-button" type="button"><svg viewBox="0 0 24 24" fill="none" aria-hidden="true"><path d="M8 12.5 16 7M8 12.5l8 5.5" stroke="currentColor" stroke-width="1.8" stroke-linecap="round"/><circle cx="6" cy="13" r="2.5" stroke="currentColor" stroke-width="1.8"/><circle cx="18" cy="6" r="2.5" stroke="currentColor" stroke-width="1.8"/><circle cx="18" cy="19" r="2.5" stroke="currentColor" stroke-width="1.8"/></svg> แชร์ลิงก์</button><button id="printButton" class="action-button" type="button"><svg viewBox="0 0 24 24" fill="none" aria-hidden="true"><path d="M6 9V3h12v6M6 17H4V9h16v8h-2M6 14h12v7H6z" stroke="currentColor" stroke-width="1.8" stroke-linejoin="round"/></svg> พิมพ์</button></div>
         </div>
 
         <div class="summary-grid">
-          <div class="stat-card stat-accent"><span>คาบสอนต่อสัปดาห์</span><strong id="lessonCount">0</strong><small>นับเฉพาะคาบสอนจริง</small></div>
+          <div class="stat-card stat-accent"><span id="lessonLabel">คาบสอนต่อสัปดาห์</span><strong id="lessonCount">0</strong><small id="lessonNote">นับเฉพาะคาบสอนจริง</small></div>
           <div class="stat-card"><span>ภาคเรียน</span><strong id="termValue">2/2569</strong><small>ตารางฉบับประกาศ</small></div>
-          <div class="stat-card"><span>วันสอนมากที่สุด</span><strong id="busyDay">—</strong><small id="busyDetail">—</small></div>
+          <div class="stat-card"><span id="busyLabel">วันสอนมากที่สุด</span><strong id="busyDay">—</strong><small id="busyDetail">—</small></div>
         </div>
 
         <section class="schedule-section surface" aria-labelledby="scheduleTitle">
@@ -71,14 +75,14 @@
           <div class="desktop-table-wrap"><table id="weekTable" class="week-table"><thead></thead><tbody></tbody></table></div>
         </section>
 
-        <div class="support-grid"><div class="support-card"><span class="support-icon" aria-hidden="true">↗</span><div><h3>ต้องแจ้งลา หรือดูการจัดสอนแทน?</h3><p>เปิด LINE OA ของโรงเรียน แล้วเลือกเมนูที่เกี่ยวข้องได้เลย</p><a id="lineButton" class="line-button" href="#" target="_blank" rel="noopener noreferrer" hidden>เปิด LINE OA <span aria-hidden="true">↗</span></a><p id="linePending" class="pending-line">รอลิงก์ LINE OA จากฝ่ายวิชาการ</p></div></div><div class="support-card support-note"><span class="support-icon" aria-hidden="true">✓</span><div><h3>ใช้ฉบับประกาศล่าสุด</h3><p id="versionNote">ข้อมูลยึดตามตารางที่โรงเรียนประกาศใน KabSon</p></div></div></div>
+        <div id="teacherSupport" class="support-grid"><div class="support-card"><span class="support-icon" aria-hidden="true">↗</span><div><h3>ต้องแจ้งลา หรือดูการจัดสอนแทน?</h3><p>เปิด LINE OA ของโรงเรียน แล้วเลือกเมนูที่เกี่ยวข้องได้เลย</p><a id="lineButton" class="line-button" href="#" target="_blank" rel="noopener noreferrer" hidden>เปิด LINE OA <span aria-hidden="true">↗</span></a><p id="linePending" class="pending-line">รอลิงก์ LINE OA จากฝ่ายวิชาการ</p></div></div><div class="support-card support-note"><span class="support-icon" aria-hidden="true">✓</span><div><h3>ใช้ฉบับประกาศล่าสุด</h3><p id="versionNote">ข้อมูลยึดตามตารางที่โรงเรียนประกาศใน KabSon</p></div></div></div>
       </section>
 
-      <section id="emptyState" class="empty-state" aria-live="polite"><span aria-hidden="true">↗</span><h2>เลือกครูเพื่อเปิดตาราง</h2><p>กดชื่อจากรายการด้านบน หรือค้นหาด้วยรหัสครู</p></section>
+      <section id="emptyState" class="empty-state" aria-live="polite"><span aria-hidden="true">↗</span><h2 id="emptyTitle">เลือกครูเพื่อเปิดตาราง</h2><p id="emptyLead">กดชื่อจากรายการด้านบน หรือค้นหาด้วยรหัสครู</p></section>
       <p id="toast" class="toast" role="status" aria-live="polite"></p>
     </div>
   </main>
 
-  <footer class="site-footer"><div class="shell footer-inner"><span>KabSon · ตารางสอนครู</span><span id="footerVersion">ฉบับประกาศ</span></div></footer>
+  <footer class="site-footer"><div class="shell footer-inner"><span>KabSon · ตารางสอนครูและนักเรียน</span><span id="footerVersion">ฉบับประกาศ</span></div></footer>
 </body>
 </html>
