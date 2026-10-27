@@ -64,6 +64,8 @@
   });
   byId('shareButton').addEventListener('click', shareSelection);
   byId('printButton').addEventListener('click', () => window.print());
+  byId('weekLayoutButton').addEventListener('click', () => setMobileLayout('week'));
+  byId('dayLayoutButton').addEventListener('click', () => setMobileLayout('day'));
   window.addEventListener('popstate', () => {
     const code = new URL(location.href).searchParams.get(isStudent ? 'class' : 'teacher');
     selectItem(items.find((item) => item.code === code) || null, false);
@@ -201,25 +203,35 @@
     head.replaceChildren(); body.replaceChildren();
     const header = head.insertRow();
     const corner = document.createElement('th');
-    corner.scope = 'col'; corner.textContent = 'คาบ'; header.append(corner);
-    for (const day of data.days) {
-      const cell = document.createElement('th');
-      cell.scope = 'col'; cell.textContent = day.name; header.append(cell);
-    }
+    corner.scope = 'col'; corner.textContent = 'วัน / คาบ'; header.append(corner);
     for (const period of periods) {
-      const row = body.insertRow();
-      row.insertCell().append(periodLabel(period));
-      for (const day of data.days) row.insertCell().append(slotDisplay(slotAt(day.number, period.number)));
+      const cell = document.createElement('th');
+      cell.scope = 'col'; cell.append(periodLabel(period)); header.append(cell);
     }
+    for (const day of data.days) {
+      const row = body.insertRow();
+      const dayHeading = document.createElement('th');
+      dayHeading.scope = 'row';
+      dayHeading.className = 'day-heading';
+      dayHeading.textContent = day.name;
+      row.append(dayHeading);
+      for (const period of periods) row.insertCell().append(slotDisplay(slotAt(day.number, period.number)));
+    }
+  }
+
+  function setMobileLayout(layout) {
+    byId('scheduleSection').dataset.layout = layout;
+    byId('weekLayoutButton').setAttribute('aria-pressed', String(layout === 'week'));
+    byId('dayLayoutButton').setAttribute('aria-pressed', String(layout === 'day'));
   }
 
   function renderDayTabs() {
     const root = byId('dayTabs'); root.replaceChildren();
     for (const day of data.days) {
       const button = document.createElement('button');
-      button.type = 'button'; button.className = 'day-tab'; button.role = 'tab';
+      button.type = 'button'; button.className = 'day-tab';
       button.textContent = day.name;
-      button.setAttribute('aria-selected', String(selectedDay === day.number));
+      button.setAttribute('aria-pressed', String(selectedDay === day.number));
       button.addEventListener('click', () => { selectedDay = day.number; renderDayTabs(); renderAgenda(); });
       root.append(button);
     }

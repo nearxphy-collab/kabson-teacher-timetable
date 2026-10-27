@@ -68,11 +68,13 @@
           <div class="stat-card"><span id="busyLabel">วันสอนมากที่สุด</span><strong id="busyDay">—</strong><small id="busyDetail">—</small></div>
         </div>
 
-        <section class="schedule-section surface" aria-labelledby="scheduleTitle">
-          <div class="schedule-heading"><div><span class="section-kicker">ภาพรวมสัปดาห์</span><h3 id="scheduleTitle">คาบเรียนและกิจกรรม</h3></div><div class="legend"><span><i class="legend-class"></i> คาบสอน</span><span><i class="legend-activity"></i> กิจกรรม</span><span><i class="legend-free"></i> ว่าง</span></div></div>
-          <div id="dayTabs" class="day-tabs" role="tablist" aria-label="เลือกวันเรียน"></div>
+        <section id="scheduleSection" class="schedule-section surface" data-layout="week" aria-labelledby="scheduleTitle">
+          <div class="schedule-heading"><div><span class="section-kicker">ตารางทั้งสัปดาห์</span><h3 id="scheduleTitle">วันเรียน × คาบ</h3></div><div class="legend"><span><i class="legend-class"></i> คาบเรียน</span><span><i class="legend-activity"></i> กิจกรรม</span><span><i class="legend-free"></i> ว่าง</span></div></div>
+          <div class="layout-toggle" role="group" aria-label="รูปแบบตารางบนมือถือ"><button id="weekLayoutButton" class="layout-button" type="button" aria-pressed="true">ทั้งสัปดาห์</button><button id="dayLayoutButton" class="layout-button" type="button" aria-pressed="false">ดูรายวัน</button></div>
+          <div id="dayTabs" class="day-tabs" role="group" aria-label="เลือกวันเรียน"></div>
           <div id="mobileAgenda" class="mobile-agenda"></div>
-          <div class="desktop-table-wrap"><table id="weekTable" class="week-table"><thead></thead><tbody></tbody></table></div>
+          <p class="scroll-hint">เลื่อนตารางในกรอบซ้าย–ขวา เพื่อดูคาบทั้งหมด</p>
+          <div class="desktop-table-wrap" tabindex="0" aria-label="ตารางสอนทั้งสัปดาห์ เลื่อนซ้ายขวาเพื่อดูคาบทั้งหมด"><table id="weekTable" class="week-table"><caption class="sr-only">ตารางทั้งสัปดาห์ แถวเป็นวัน คอลัมน์เป็นคาบ</caption><thead></thead><tbody></tbody></table></div>
         </section>
 
         <div id="teacherSupport" class="support-grid"><div class="support-card"><span class="support-icon" aria-hidden="true">↗</span><div><h3>ต้องแจ้งลา หรือดูการจัดสอนแทน?</h3><p>เปิด LINE OA ของโรงเรียน แล้วเลือกเมนูที่เกี่ยวข้องได้เลย</p><a id="lineButton" class="line-button" href="#" target="_blank" rel="noopener noreferrer" hidden>เปิด LINE OA <span aria-hidden="true">↗</span></a><p id="linePending" class="pending-line">รอลิงก์ LINE OA จากฝ่ายวิชาการ</p></div></div><div class="support-card support-note"><span class="support-icon" aria-hidden="true">✓</span><div><h3>ใช้ฉบับประกาศล่าสุด</h3><p id="versionNote">ข้อมูลยึดตามตารางที่โรงเรียนประกาศใน KabSon</p></div></div></div>
